@@ -1,0 +1,61 @@
+version: "3.8"
+services: 
+  redis:
+    image: redis:latest
+    restart: always
+    ports: 
+      - "6379:6379"
+    networks:
+      - backend-network
+
+  db:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    ports: 
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: mypass
+    networks:
+      - backend-network
+
+  backend_rds:
+    image: public.ecr.aws/h1h5x3y4/backend_rds:latest
+    ports: 
+       - "8000:8000"
+    environment:
+      DB_NAME: 'postgres'
+      DB_USER: 'postgres'
+      DB_PASSWORD: 'mypass'
+      DB_HOST: 'db'
+      DB_PORT: 5432
+      CORS_ALLOWED_ORIGINS: 'https://d2sfjmusomuhqr.cloudfront.net/' 
+    depends_on:
+        - db
+    networks:
+        - backend-network
+
+  backend_redis:
+    image: public.ecr.aws/h1h5x3y4/backend_redis:latest
+    ports: 
+       - "8001:8001"
+    environment:
+      REDIS_HOST: 'redis'
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PASSWORD: ""
+      CORS_ALLOWED_ORIGINS: 'https://d2sfjmusomuhqr.cloudfront.net/'
+    depends_on:
+        - redis
+    networks:
+        - backend-network
+
+networks:
+  backend-network:
+    driver: bridge
+
+    
+
+  
+
+  
